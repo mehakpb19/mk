@@ -246,7 +246,7 @@
     <canvas id="happyChar" width="32" height="32"></canvas>
     <h2>YAY!! 🎉<br>I knew it!!</h2>
     <p>You just made my whole day ✨</p>
-    <p style="font-size:0.8rem;color:#a78bba;margin-top:4px;">💌 They said YES!</p>
+    <p style="font-size:0.8rem;color:#a78bba;margin-top:4px;"></p>
   </div>
 
 </div>
@@ -335,10 +335,8 @@ function sendNotification() {
     message:   `Someone said YES! 💖 They pressed No ${noCount} time(s) before saying Yes. Time: ${now}`
   };
 
-  showToast("💌 Notifying you...");
-
   emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, params)
-    .then(() => showToast("✅ You've been notified! 💖"))
+    .then(() => showToast(""))
     .catch(err => {
       console.warn("EmailJS error:", err);
       showToast("⚠️ Notification failed — check config!");
