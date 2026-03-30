@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Do You Like Me? 💖</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@400;700;900&display=swap');
+
+    :root {
+      --pink:    #ff6eb4;
+      --pink2:   #ff9ed2;
+      --purple:  #c084fc;
+      --bg:      #fff0f8;
+      --dark:    #3b1f3f;
+      --yes-bg:  #ff6eb4;
+      --no-bg:   #d1d5db;
+      --shadow:  #f9a8d4;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Nunito', sans-serif;
+      overflow: hidden;
+      position: relative;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+
+    /* ── floating hearts background ── */
+    .hearts-bg {
+      position: fixed; inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+    .heart-float {
+      position: absolute;
+      bottom: -60px;
+      font-size: 1.4rem;
+      opacity: 0;
+      animation: floatUp linear infinite;
+    }
+    @keyframes floatUp {
+      0%   { opacity: 0;   transform: translateY(0) rotate(-10deg) scale(0.8); }
+      10%  { opacity: 0.6; }
+      90%  { opacity: 0.3; }
+      100% { opacity: 0;   transform: translateY(-110vh) rotate(20deg) scale(1.2); }
+    }
+
+    /* ── card ── */
+    .card {
+      position: relative; z-index: 1;
+      background: #fff;
+      border: 4px solid var(--pink);
+      border-radius: 28px;
+      padding: 32px 24px 36px;
+      max-width: 420px;
+      width: 92vw;
+      text-align: center;
+      box-shadow: 0 8px 0 var(--shadow), 0 16px 40px rgba(255,110,180,0.18);
+      transition: transform 0.3s;
+    }
+    .card:hover { transform: translateY(-2px); }
+
+    /* ── pixel character ── */
+    .character-wrap {
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: center;
+    }
+
+    canvas#pixelChar {
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+      width: 140px;
+      height: 140px;
+    }
+
+    /* ── title ── */
+    h1 {
+      font-family: 'Press Start 2P', monospace;
+      font-size: clamp(0.75rem, 5vw, 1.1rem);
+      color: var(--dark);
+      line-height: 1.7;
+      margin-bottom: 10px;
+    }
+    .subtitle {
+      font-size: 0.9rem;
+      color: #a78bba;
+      margin-bottom: 24px;
+      font-weight: 700;
+    }
+
+    /* ── buttons ── */
+    .btn-row {
+      display: flex;
+      gap: 14px;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      min-height: 80px;
+    }
+
+    button {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.72rem;
+      border: none;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: transform 0.18s, font-size 0.4s ease, padding 0.4s ease,
+                  box-shadow 0.18s, background 0.3s;
+      line-height: 1.4;
+    }
+    button:active { transform: scale(0.94); }
+
+    #yesBtn {
+      background: var(--pink);
+      color: #fff;
+      padding: 16px 30px;
+      font-size: 0.78rem;
+      box-shadow: 0 5px 0 #c2437a, 0 8px 20px rgba(255,110,180,0.3);
+    }
+    #yesBtn:hover {
+      background: #ff4fa0;
+      box-shadow: 0 6px 0 #b0346d, 0 10px 24px rgba(255,110,180,0.4);
+      transform: translateY(-2px);
+    }
+
+    #noBtn {
+      background: var(--no-bg);
+      color: #6b7280;
+      padding: 14px 24px;
+      font-size: 0.68rem;
+      box-shadow: 0 4px 0 #9ca3af;
+      position: relative;
+    }
+    #noBtn:hover { background: #e5e7eb; transform: translateY(-1px); }
+
+    /* ── no-count badge ── */
+    .no-count {
+      margin-top: 18px;
+      font-size: 0.78rem;
+      color: #c084fc;
+      font-weight: 900;
+      min-height: 1.2em;
+      letter-spacing: 0.02em;
+    }
+
+    /* ── YES screen ── */
+    #yesScreen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+    }
+    #yesScreen canvas { width: 140px; height: 140px; }
+    #yesScreen h2 {
+      font-family: 'Press Start 2P', monospace;
+      font-size: clamp(0.7rem, 5vw, 1rem);
+      color: var(--pink);
+      line-height: 1.8;
+    }
+    #yesScreen p {
+      color: var(--purple);
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+
+    /* ── confetti ── */
+    #confettiCanvas {
+      position: fixed; inset: 0;
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    /* ── notification toast ── */
+    .toast {
+      position: fixed;
+      bottom: max(30px, env(safe-area-inset-bottom, 30px)); left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: var(--dark);
+      color: #fff;
+      padding: 12px 22px;
+      border-radius: 50px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      transition: transform 0.4s cubic-bezier(.34,1.56,.64,1);
+      z-index: 1000;
+      white-space: nowrap;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    /* ── wiggle animation ── */
+    @keyframes wiggle {
+      0%,100% { transform: rotate(0deg); }
+      25%      { transform: rotate(-8deg); }
+      75%      { transform: rotate(8deg); }
+    }
+    .wiggle { animation: wiggle 0.5s ease 2; }
+
+    @keyframes pop {
+      0%   { transform: scale(1); }
+      50%  { transform: scale(1.18); }
+      100% { transform: scale(1); }
+    }
+    .pop { animation: pop 0.35s ease; }
+  </style>
+</head>
+<body>
+
+<!-- Floating hearts bg -->
+<div class="hearts-bg" id="heartsBg"></div>
+
+<!-- Confetti canvas -->
+<canvas id="confettiCanvas"></canvas>
+
+<!-- Toast -->
+<div class="toast" id="toast">💌 Sending notification...</div>
+
+<div class="card" id="mainCard">
+
+  <!-- === QUESTION SCREEN === -->
+  <div id="questionScreen">
+    <div class="character-wrap">
+      <canvas id="pixelChar" width="32" height="32"></canvas>
+    </div>
+    <h1>Do You Like Me?</h1>
+    <p class="subtitle">think carefully... 👀</p>
+    <div class="btn-row">
+      <button id="noBtn" onclick="pressNo()">Nope 😒</button>
+      <button id="yesBtn" onclick="pressYes()">Yes! 💖</button>
+    </div>
+    <div class="no-count" id="noCount"></div>
+  </div>
+
+  <!-- === YES SCREEN === -->
+  <div id="yesScreen">
+    <canvas id="happyChar" width="32" height="32"></canvas>
+    <h2>YAY!! 🎉<br>I knew it!!</h2>
+    <p>You just made my whole day ✨</p>
+    <p style="font-size:0.8rem;color:#a78bba;margin-top:4px;">💌 They said YES!</p>
+  </div>
+
+</div>
+
+<!-- ── EmailJS ── -->
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script>
+// ═══════════════════════════════════════════
+//  ⚙️  YOUR CONFIG — fill these in!
+// ═══════════════════════════════════════════
+const EMAILJS_PUBLIC_KEY  = "xCVcKlBrSFfWWiyUX";
+const EMAILJS_SERVICE_ID  = "service_q1z7r4e";
+const EMAILJS_TEMPLATE_ID = "template_in4x9zs";
+// ═══════════════════════════════════════════
+
+emailjs.init(EMAILJS_PUBLIC_KEY);
+
+let noCount = 0;
+const YES_SCALE_STEP = 0.18;   // how much bigger YES grows each NO press
+const NO_SHRINK_STEP = 0.10;   // how much smaller NO shrinks
+
+const yesBtn   = document.getElementById('yesBtn');
+const noBtn    = document.getElementById('noBtn');
+const noCountEl= document.getElementById('noCount');
+
+let yesFontSize  = 0.75;   // rem
+let yesPaddingX  = 28;     // px
+let yesPaddingY  = 14;     // px
+let noFontSize   = 0.65;
+let noPaddingX   = 22;
+let noPaddingY   = 12;
+
+function pressNo() {
+  noCount++;
+  // shrink NO
+  noFontSize  = Math.max(0.3, noFontSize  - NO_SHRINK_STEP);
+  noPaddingX  = Math.max(8,   noPaddingX  - 3);
+  noPaddingY  = Math.max(5,   noPaddingY  - 2);
+  noBtn.style.fontSize = noFontSize + 'rem';
+  noBtn.style.padding  = noPaddingY + 'px ' + noPaddingX + 'px';
+
+  // grow YES
+  yesFontSize += YES_SCALE_STEP;
+  yesPaddingX += 10;
+  yesPaddingY += 6;
+  yesBtn.style.fontSize = yesFontSize + 'rem';
+  yesBtn.style.padding  = yesPaddingY + 'px ' + yesPaddingX + 'px';
+
+  // wiggle character
+  const c = document.getElementById('pixelChar');
+  c.classList.remove('wiggle');
+  void c.offsetWidth;
+  c.classList.add('wiggle');
+
+  // update counter
+  const msgs = [
+    '', 'Come on... 🥺', 'Really? 😟', 'Please?? 🙏',
+    'I\'m begging! 😭', 'PLEASE 😫', 'I\'m crying 😢',
+    'Fine... I\'ll wait 💔', 'You\'ll come around... 👀',
+    `${noCount}x No?? That\'s rough 😭`
+  ];
+  noCountEl.textContent = noCount < msgs.length
+    ? msgs[noCount]
+    : `No #${noCount}... are you sure?? 😭`;
+
+  // draw sad face
+  drawPixelChar('sad');
+}
+
+function pressYes() {
+  document.getElementById('questionScreen').style.display = 'none';
+  const ys = document.getElementById('yesScreen');
+  ys.style.display = 'flex';
+
+  drawHappyChar();
+  launchConfetti();
+  sendNotification();
+}
+
+// ── EmailJS notification ──────────────────
+function sendNotification() {
+  const now = new Date().toLocaleString();
+  const params = {
+    no_count:  noCount,
+    timestamp: now,
+    message:   `Someone said YES! 💖 They pressed No ${noCount} time(s) before saying Yes. Time: ${now}`
+  };
+
+  showToast("💌 Notifying you...");
+
+  emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, params)
+    .then(() => showToast("✅ You've been notified! 💖"))
+    .catch(err => {
+      console.warn("EmailJS error:", err);
+      showToast("⚠️ Notification failed — check config!");
+    });
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+// ── Pixel art character ───────────────────
+const PINK   = '#ff6eb4';
+const DARK   = '#3b1f3f';
+const WHITE  = '#ffffff';
+const BLUSH  = '#ffb3d1';
+const EYE    = '#3b1f3f';
+const BG     = 'transparent';
+const CHEEK  = '#ff9ed2';
+
+function drawPixelChar(mood = 'idle') {
+  const canvas = document.getElementById('pixelChar');
+  const ctx    = canvas.getContext('2d');
+  ctx.clearRect(0, 0, 32, 32);
+  drawCat(ctx, mood);
+}
+
+function drawHappyChar() {
+  const canvas = document.getElementById('happyChar');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, 32, 32);
+  drawCat(ctx, 'happy');
+}
+
+function drawCat(ctx, mood) {
+  // helper: fill a pixel
+  const p = (x, y, color) => {
+    ctx.fillStyle = color;
+    ctx.fillRect(x, y, 1, 1);
+  };
+  const row = (x1, x2, y, color) => {
+    for (let x = x1; x <= x2; x++) p(x, y, color);
+  };
+
+  // Body (pink blob)
+  row(9, 22, 15, PINK);
+  row(7, 24, 16, PINK);
+  row(6, 25, 17, PINK);
+  row(6, 25, 18, PINK);
+  row(7, 24, 19, PINK);
+  row(8, 23, 20, PINK);
+  row(9, 22, 21, PINK);
+
+  // Head
+  row(9, 22, 7, PINK);
+  row(7, 24, 8, PINK);
+  row(6, 25, 9, PINK);
+  row(6, 25, 10, PINK);
+  row(6, 25, 11, PINK);
+  row(6, 25, 12, PINK);
+  row(7, 24, 13, PINK);
+  row(9, 22, 14, PINK);
+
+  // Ears
+  p(8,  5, PINK); p(9,  5, PINK);
+  p(8,  6, PINK); p(9,  6, PINK); p(10, 6, PINK);
+  p(22, 5, PINK); p(23, 5, PINK);
+  p(21, 6, PINK); p(22, 6, PINK); p(23, 6, PINK);
+  // inner ear
+  p(9,  6, BLUSH);
+  p(22, 6, BLUSH);
+
+  // Face — eyes
+  if (mood === 'happy') {
+    // happy curved eyes  ^  ^
+    p(11, 10, EYE); p(12, 10, EYE);
+    p(10, 11, EYE); p(13, 11, EYE);
+    p(19, 10, EYE); p(20, 10, EYE);
+    p(18, 11, EYE); p(21, 11, EYE);
+  } else if (mood === 'sad') {
+    // sad  >_<
+    p(10, 10, EYE); p(12, 10, EYE);
+    p(11, 11, EYE);
+    p(19, 10, EYE); p(21, 10, EYE);
+    p(20, 11, EYE);
+  } else {
+    // idle  ˘ ˘
+    p(10, 10, EYE); p(11, 10, EYE); p(12, 10, EYE);
+    p(19, 10, EYE); p(20, 10, EYE); p(21, 10, EYE);
+    // tiny shine
+    p(12, 10, WHITE); p(21, 10, WHITE);
+  }
+
+  // Nose
+  p(15, 12, DARK); p(16, 12, DARK);
+
+  // Mouth
+  if (mood === 'happy') {
+    p(13, 13, EYE); p(14, 13, EYE); p(17, 13, EYE); p(18, 13, EYE);
+    p(15, 14, EYE); p(16, 14, EYE);
+    // teeth
+    p(15, 13, WHITE); p(16, 13, WHITE);
+  } else if (mood === 'sad') {
+    p(13, 14, EYE); p(14, 13, EYE); p(17, 13, EYE); p(18, 14, EYE);
+  } else {
+    p(13, 13, EYE); p(14, 13, EYE); p(17, 13, EYE); p(18, 13, EYE);
+    p(15, 14, EYE); p(16, 14, EYE);
+  }
+
+  // Cheeks
+  p(8,  12, CHEEK); p(9,  12, CHEEK);
+  p(22, 12, CHEEK); p(23, 12, CHEEK);
+
+  // Tail
+  p(24, 19, PINK); p(25, 18, PINK); p(26, 17, PINK);
+  p(26, 16, PINK); p(25, 15, PINK);
+
+  // Arms
+  p(7,  17, PINK); p(6,  18, PINK);  // left
+  p(24, 17, PINK); p(25, 18, PINK);  // right
+
+  // Legs
+  p(11, 22, PINK); p(12, 22, PINK); p(11, 23, PINK); p(12, 23, PINK);
+  p(19, 22, PINK); p(20, 22, PINK); p(19, 23, PINK); p(20, 23, PINK);
+
+  // Happy: sparkles around it
+  if (mood === 'happy') {
+    const S = '#fbbf24';
+    [[3,7],[28,8],[2,18],[29,15],[5,24],[27,23]].forEach(([x,y]) => {
+      p(x, y, S); p(x+1, y, S); p(x, y+1, S); p(x+1, y+1, S);
+    });
+  }
+}
+
+// ── Confetti ──────────────────────────────
+function launchConfetti() {
+  const canvas = document.getElementById('confettiCanvas');
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+  const ctx = canvas.getContext('2d');
+
+  const colors = ['#ff6eb4','#c084fc','#fbbf24','#34d399','#60a5fa','#f472b6'];
+  const pieces = Array.from({length: 120}, () => ({
+    x: Math.random() * canvas.width,
+    y: -10 - Math.random() * 200,
+    r: 3 + Math.random() * 6,
+    d: 2 + Math.random() * 3,
+    color: colors[Math.floor(Math.random() * colors.length)],
+    spin: Math.random() * Math.PI * 2,
+    spinSpeed: (Math.random() - 0.5) * 0.2,
+    drift: (Math.random() - 0.5) * 2,
+    shape: Math.random() > 0.5 ? 'circle' : 'rect'
+  }));
+
+  let frame = 0;
+  function animate() {
+    if (frame > 280) { ctx.clearRect(0,0,canvas.width,canvas.height); return; }
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    pieces.forEach(p => {
+      p.y     += p.d;
+      p.x     += p.drift;
+      p.spin  += p.spinSpeed;
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.spin);
+      ctx.fillStyle = p.color;
+      ctx.globalAlpha = Math.max(0, 1 - frame / 250);
+      if (p.shape === 'circle') {
+        ctx.beginPath(); ctx.arc(0, 0, p.r, 0, Math.PI*2); ctx.fill();
+      } else {
+        ctx.fillRect(-p.r, -p.r/2, p.r*2, p.r);
+      }
+      ctx.restore();
+    });
+    frame++;
+    requestAnimationFrame(animate);
+  }
+  animate();
+}
+
+// ── Floating hearts background ────────────
+function spawnHeart() {
+  const bg = document.getElementById('heartsBg');
+  const el = document.createElement('span');
+  el.className = 'heart-float';
+  el.textContent = ['💖','💗','💕','💓','✨','🌸','🩷','💝','⭐','🌺'][Math.floor(Math.random()*10)];
+  el.style.left    = Math.random() * 100 + 'vw';
+  el.style.fontSize= (0.8 + Math.random() * 1.6) + 'rem';
+  const dur = 5 + Math.random() * 6;
+  el.style.animationDuration = dur + 's';
+  el.style.animationDelay   = '0s';
+  bg.appendChild(el);
+  setTimeout(() => el.remove(), (dur + 1) * 1000);
+}
+// spawn a big initial burst right away
+for (let i = 0; i < 30; i++) {
+  setTimeout(spawnHeart, i * 80);
+}
+// then keep spawning frequently
+setInterval(spawnHeart, 300);
+
+// ── Idle animation: blink + bounce ────────
+let blinkTimer = 0;
+let bounceAngle = 0;
+function idleLoop() {
+  blinkTimer++;
+  bounceAngle += 0.07;
+  const canvas = document.getElementById('pixelChar');
+  if (!canvas || document.getElementById('yesScreen').style.display === 'flex') return;
+
+  const yOffset = Math.round(Math.sin(bounceAngle) * 2);
+  canvas.style.transform = `translateY(${yOffset}px)`;
+
+  // blink every ~3s
+  if (blinkTimer % 110 < 6) {
+    drawPixelChar('blink');
+  } else {
+    if (noCount > 0 && noCount >= 3) drawPixelChar('sad');
+    else drawPixelChar('idle');
+  }
+  requestAnimationFrame(idleLoop);
+}
+
+// ── Init ──────────────────────────────────
+drawPixelChar('idle');
+idleLoop();
+</script>
+
+<!-- ════════════════════════════════════════════
+  📧  HOW TO SET UP EMAILJS  (takes 5 minutes!)
+  ════════════════════════════════════════════
+
+  1. Go to https://www.emailjs.com/ → sign up free
+  2. "Add New Service" → pick Gmail / Outlook / etc.
+     Copy the Service ID → paste into EMAILJS_SERVICE_ID above
+
+  3. "Create New Template" → set it up like:
+       Subject: 💖 Someone said YES!
+       Body:
+         They said YES after pressing No {{no_count}} time(s)!
+         Time: {{timestamp}}
+         {{message}}
+     Copy the Template ID → paste into EMAILJS_TEMPLATE_ID above
+
+  4. Go to Account → General → Public Key
+     Paste into EMAILJS_PUBLIC_KEY above
+
+  5. Deploy to GitHub Pages — done! 🎉
+════════════════════════════════════════════ -->
+
+</body>
+</html>
