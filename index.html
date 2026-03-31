@@ -34,7 +34,6 @@
       touch-action: manipulation;
     }
 
-    /* ── floating hearts background ── */
     .hearts-bg {
       position: fixed; inset: 0;
       pointer-events: none;
@@ -55,7 +54,6 @@
       100% { opacity: 0;   transform: translateY(-110vh) rotate(20deg) scale(1.2); }
     }
 
-    /* ── card ── */
     .card {
       position: relative; z-index: 1;
       background: #fff;
@@ -70,7 +68,6 @@
     }
     .card:hover { transform: translateY(-2px); }
 
-    /* ── pixel character ── */
     .character-wrap {
       margin-bottom: 20px;
       display: flex;
@@ -84,7 +81,6 @@
       height: 140px;
     }
 
-    /* ── title ── */
     h1 {
       font-family: 'Press Start 2P', monospace;
       font-size: clamp(0.75rem, 5vw, 1.1rem);
@@ -99,7 +95,6 @@
       font-weight: 700;
     }
 
-    /* ── buttons ── */
     .btn-row {
       display: flex;
       gap: 14px;
@@ -144,7 +139,6 @@
     }
     #noBtn:hover { background: #e5e7eb; transform: translateY(-1px); }
 
-    /* ── no-count badge ── */
     .no-count {
       margin-top: 18px;
       font-size: 0.78rem;
@@ -154,7 +148,6 @@
       letter-spacing: 0.02em;
     }
 
-    /* ── YES screen ── */
     #yesScreen {
       display: none;
       flex-direction: column;
@@ -174,14 +167,12 @@
       font-size: 0.95rem;
     }
 
-    /* ── confetti ── */
     #confettiCanvas {
       position: fixed; inset: 0;
       pointer-events: none;
       z-index: 999;
     }
 
-    /* ── notification toast ── */
     .toast {
       position: fixed;
       bottom: max(30px, env(safe-area-inset-bottom, 30px)); left: 50%;
@@ -198,7 +189,6 @@
     }
     .toast.show { transform: translateX(-50%) translateY(0); }
 
-    /* ── wiggle animation ── */
     @keyframes wiggle {
       0%,100% { transform: rotate(0deg); }
       25%      { transform: rotate(-8deg); }
@@ -216,24 +206,18 @@
 </head>
 <body>
 
-<!-- Floating hearts bg -->
 <div class="hearts-bg" id="heartsBg"></div>
 
-<!-- Confetti canvas -->
 <canvas id="confettiCanvas"></canvas>
-
-<!-- Toast -->
-<div class="toast" id="toast">💌 Sending notification...</div>
 
 <div class="card" id="mainCard">
 
-  <!-- === QUESTION SCREEN === -->
   <div id="questionScreen">
     <div class="character-wrap">
       <canvas id="pixelChar" width="32" height="32"></canvas>
     </div>
     <h1>Do You Like Me?</h1>
-    <p class="subtitle">think carefully... 👀</p>
+    <p class="subtitle">Soch Ke Dasi</p>
     <div class="btn-row">
       <button id="noBtn" onclick="pressNo()">Nope 😒</button>
       <button id="yesBtn" onclick="pressYes()">Yes! 💖</button>
@@ -241,78 +225,65 @@
     <div class="no-count" id="noCount"></div>
   </div>
 
-  <!-- === YES SCREEN === -->
   <div id="yesScreen">
     <canvas id="happyChar" width="32" height="32"></canvas>
-    <h2>YAY!! 🎉<br>I knew it!!</h2>
-    <p>You just made my whole day ✨</p>
-    <p style="font-size:0.8rem;color:#a78bba;margin-top:4px;">💌 They said YES!</p>
+    <h2>Hee Hee 🎉<br>Manu pta c.</h2>
   </div>
-
 </div>
 
-<!-- ── EmailJS ── -->
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script>
-// ═══════════════════════════════════════════
-//  ⚙️  YOUR CONFIG — fill these in!
-// ═══════════════════════════════════════════
+
 const EMAILJS_PUBLIC_KEY  = "xCVcKlBrSFfWWiyUX";
 const EMAILJS_SERVICE_ID  = "service_q1z7r4e";
 const EMAILJS_TEMPLATE_ID = "template_in4x9zs";
-// ═══════════════════════════════════════════
 
 emailjs.init(EMAILJS_PUBLIC_KEY);
 
 let noCount = 0;
-const YES_SCALE_STEP = 0.18;   // how much bigger YES grows each NO press
-const NO_SHRINK_STEP = 0.10;   // how much smaller NO shrinks
+const YES_SCALE_STEP = 0.20;
+const NO_SHRINK_STEP = 0.10;   
 
 const yesBtn   = document.getElementById('yesBtn');
 const noBtn    = document.getElementById('noBtn');
 const noCountEl= document.getElementById('noCount');
 
-let yesFontSize  = 0.75;   // rem
-let yesPaddingX  = 28;     // px
-let yesPaddingY  = 14;     // px
+let yesFontSize  = 0.75;  
+let yesPaddingX  = 28;     
+let yesPaddingY  = 14;     
 let noFontSize   = 0.65;
 let noPaddingX   = 22;
 let noPaddingY   = 12;
 
 function pressNo() {
   noCount++;
-  // shrink NO
   noFontSize  = Math.max(0.3, noFontSize  - NO_SHRINK_STEP);
   noPaddingX  = Math.max(8,   noPaddingX  - 3);
   noPaddingY  = Math.max(5,   noPaddingY  - 2);
   noBtn.style.fontSize = noFontSize + 'rem';
   noBtn.style.padding  = noPaddingY + 'px ' + noPaddingX + 'px';
 
-  // grow YES
   yesFontSize += YES_SCALE_STEP;
   yesPaddingX += 10;
   yesPaddingY += 6;
   yesBtn.style.fontSize = yesFontSize + 'rem';
   yesBtn.style.padding  = yesPaddingY + 'px ' + yesPaddingX + 'px';
 
-  // wiggle character
   const c = document.getElementById('pixelChar');
   c.classList.remove('wiggle');
   void c.offsetWidth;
   c.classList.add('wiggle');
 
-  // update counter
   const msgs = [
-    '', 'Come on... 🥺', 'Really? 😟', 'Please?? 🙏',
-    'I\'m begging! 😭', 'PLEASE 😫', 'I\'m crying 😢',
-    'Fine... I\'ll wait 💔', 'You\'ll come around... 👀',
+    '', 'Laaa.... 🥺', 'Sachi 😟', 'Plzz.... 🙏',
+    'Kha Da Ha Plzz 😭', 'PLEASE 😫', 'Dek Laa😢',
+    'Changa ch Hogya mzk 💔', 'Hun ta ha kha da 👀',
     `${noCount}x No?? That\'s rough 😭`
   ];
   noCountEl.textContent = noCount < msgs.length
     ? msgs[noCount]
     : `No #${noCount}... are you sure?? 😭`;
 
-  // draw sad face
   drawPixelChar('sad');
 }
 
@@ -326,7 +297,6 @@ function pressYes() {
   sendNotification();
 }
 
-// ── EmailJS notification ──────────────────
 function sendNotification() {
   const now = new Date().toLocaleString();
   const params = {
@@ -335,10 +305,7 @@ function sendNotification() {
     message:   `Someone said YES! 💖 They pressed No ${noCount} time(s) before saying Yes. Time: ${now}`
   };
 
-  showToast("💌 Notifying you...");
-
   emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, params)
-    .then(() => showToast("✅ You've been notified! 💖"))
     .catch(err => {
       console.warn("EmailJS error:", err);
       showToast("⚠️ Notification failed — check config!");
@@ -352,7 +319,6 @@ function showToast(msg) {
   setTimeout(() => t.classList.remove('show'), 3500);
 }
 
-// ── Pixel art character ───────────────────
 const PINK   = '#ff6eb4';
 const DARK   = '#3b1f3f';
 const WHITE  = '#ffffff';
@@ -377,7 +343,6 @@ function drawHappyChar() {
 }
 
 function drawCat(ctx, mood) {
-  // helper: fill a pixel
   const p = (x, y, color) => {
     ctx.fillStyle = color;
     ctx.fillRect(x, y, 1, 1);
@@ -386,7 +351,6 @@ function drawCat(ctx, mood) {
     for (let x = x1; x <= x2; x++) p(x, y, color);
   };
 
-  // Body (pink blob)
   row(9, 22, 15, PINK);
   row(7, 24, 16, PINK);
   row(6, 25, 17, PINK);
@@ -395,7 +359,6 @@ function drawCat(ctx, mood) {
   row(8, 23, 20, PINK);
   row(9, 22, 21, PINK);
 
-  // Head
   row(9, 22, 7, PINK);
   row(7, 24, 8, PINK);
   row(6, 25, 9, PINK);
@@ -405,44 +368,35 @@ function drawCat(ctx, mood) {
   row(7, 24, 13, PINK);
   row(9, 22, 14, PINK);
 
-  // Ears
   p(8,  5, PINK); p(9,  5, PINK);
   p(8,  6, PINK); p(9,  6, PINK); p(10, 6, PINK);
   p(22, 5, PINK); p(23, 5, PINK);
   p(21, 6, PINK); p(22, 6, PINK); p(23, 6, PINK);
-  // inner ear
+
   p(9,  6, BLUSH);
   p(22, 6, BLUSH);
 
-  // Face — eyes
   if (mood === 'happy') {
-    // happy curved eyes  ^  ^
     p(11, 10, EYE); p(12, 10, EYE);
     p(10, 11, EYE); p(13, 11, EYE);
     p(19, 10, EYE); p(20, 10, EYE);
     p(18, 11, EYE); p(21, 11, EYE);
   } else if (mood === 'sad') {
-    // sad  >_<
     p(10, 10, EYE); p(12, 10, EYE);
     p(11, 11, EYE);
     p(19, 10, EYE); p(21, 10, EYE);
     p(20, 11, EYE);
   } else {
-    // idle  ˘ ˘
     p(10, 10, EYE); p(11, 10, EYE); p(12, 10, EYE);
     p(19, 10, EYE); p(20, 10, EYE); p(21, 10, EYE);
-    // tiny shine
     p(12, 10, WHITE); p(21, 10, WHITE);
   }
 
-  // Nose
   p(15, 12, DARK); p(16, 12, DARK);
 
-  // Mouth
   if (mood === 'happy') {
     p(13, 13, EYE); p(14, 13, EYE); p(17, 13, EYE); p(18, 13, EYE);
     p(15, 14, EYE); p(16, 14, EYE);
-    // teeth
     p(15, 13, WHITE); p(16, 13, WHITE);
   } else if (mood === 'sad') {
     p(13, 14, EYE); p(14, 13, EYE); p(17, 13, EYE); p(18, 14, EYE);
@@ -451,23 +405,18 @@ function drawCat(ctx, mood) {
     p(15, 14, EYE); p(16, 14, EYE);
   }
 
-  // Cheeks
   p(8,  12, CHEEK); p(9,  12, CHEEK);
   p(22, 12, CHEEK); p(23, 12, CHEEK);
 
-  // Tail
   p(24, 19, PINK); p(25, 18, PINK); p(26, 17, PINK);
   p(26, 16, PINK); p(25, 15, PINK);
 
-  // Arms
-  p(7,  17, PINK); p(6,  18, PINK);  // left
-  p(24, 17, PINK); p(25, 18, PINK);  // right
+  p(7,  17, PINK); p(6,  18, PINK);
+  p(24, 17, PINK); p(25, 18, PINK);
 
-  // Legs
   p(11, 22, PINK); p(12, 22, PINK); p(11, 23, PINK); p(12, 23, PINK);
   p(19, 22, PINK); p(20, 22, PINK); p(19, 23, PINK); p(20, 23, PINK);
 
-  // Happy: sparkles around it
   if (mood === 'happy') {
     const S = '#fbbf24';
     [[3,7],[28,8],[2,18],[29,15],[5,24],[27,23]].forEach(([x,y]) => {
@@ -476,7 +425,6 @@ function drawCat(ctx, mood) {
   }
 }
 
-// ── Confetti ──────────────────────────────
 function launchConfetti() {
   const canvas = document.getElementById('confettiCanvas');
   canvas.width  = window.innerWidth;
@@ -522,7 +470,6 @@ function launchConfetti() {
   animate();
 }
 
-// ── Floating hearts background ────────────
 function spawnHeart() {
   const bg = document.getElementById('heartsBg');
   const el = document.createElement('span');
@@ -536,14 +483,11 @@ function spawnHeart() {
   bg.appendChild(el);
   setTimeout(() => el.remove(), (dur + 1) * 1000);
 }
-// spawn a big initial burst right away
 for (let i = 0; i < 30; i++) {
   setTimeout(spawnHeart, i * 80);
 }
-// then keep spawning frequently
 setInterval(spawnHeart, 300);
 
-// ── Idle animation: blink + bounce ────────
 let blinkTimer = 0;
 let bounceAngle = 0;
 function idleLoop() {
@@ -555,7 +499,6 @@ function idleLoop() {
   const yOffset = Math.round(Math.sin(bounceAngle) * 2);
   canvas.style.transform = `translateY(${yOffset}px)`;
 
-  // blink every ~3s
   if (blinkTimer % 110 < 6) {
     drawPixelChar('blink');
   } else {
@@ -565,32 +508,9 @@ function idleLoop() {
   requestAnimationFrame(idleLoop);
 }
 
-// ── Init ──────────────────────────────────
 drawPixelChar('idle');
 idleLoop();
 </script>
-
-<!-- ════════════════════════════════════════════
-  📧  HOW TO SET UP EMAILJS  (takes 5 minutes!)
-  ════════════════════════════════════════════
-
-  1. Go to https://www.emailjs.com/ → sign up free
-  2. "Add New Service" → pick Gmail / Outlook / etc.
-     Copy the Service ID → paste into EMAILJS_SERVICE_ID above
-
-  3. "Create New Template" → set it up like:
-       Subject: 💖 Someone said YES!
-       Body:
-         They said YES after pressing No {{no_count}} time(s)!
-         Time: {{timestamp}}
-         {{message}}
-     Copy the Template ID → paste into EMAILJS_TEMPLATE_ID above
-
-  4. Go to Account → General → Public Key
-     Paste into EMAILJS_PUBLIC_KEY above
-
-  5. Deploy to GitHub Pages — done! 🎉
-════════════════════════════════════════════ -->
 
 </body>
 </html>
